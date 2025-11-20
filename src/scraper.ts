@@ -47,7 +47,7 @@ import {
   findDmConversationsByUserId,
   DmConversation,
 } from './direct-messages';
-import { AudioSpace, getAudioSpaceById } from './spaces';
+import { AudioSpace, fetchLiveVideoStreamStatus, fetchAudioSpaceById, LiveVideoStreamStatus } from './spaces';
 
 const twUrl = 'https://x.com';
 
@@ -498,9 +498,20 @@ export class Scraper {
    * @param spaceId The Audio Space ID to fetch.
    * @returns The requested {@link AudioSpace}.
    */
-  public async fetchAudioSpaceById(spaceId: string): Promise<AudioSpace> {
-    const res = await getAudioSpaceById(spaceId, this.auth);
+  public async getAudioSpaceById(spaceId: string): Promise<AudioSpace> {
+    const res = await fetchAudioSpaceById(spaceId, this.auth);
     return this.handleResponse(res);
+  }
+
+  /**
+   * Retrieves the status of an Audio Space stream by its media key.
+   * @param mediaKey The media key of the Audio Space.
+   * @returns The status of the Audio Space stream.
+   */
+  public async getAudioSpaceStreamStatus(
+    mediaKey: string,
+  ): Promise<LiveVideoStreamStatus> {
+    return await fetchLiveVideoStreamStatus(mediaKey, this.auth);
   }
 
   /**

@@ -2,6 +2,8 @@ import stringify from 'json-stable-stringify';
 import { requestApi, RequestApiResult, addApiFeatures } from './api';
 import { TwitterAuth } from './auth';
 import { TwitterApiErrorRaw } from './errors';
+import { updateCookieJar } from './requests';
+import { Headers } from 'headers-polyfill';
 
 /**
  * Audio Space response structure from Twitter GraphQL API
@@ -76,12 +78,19 @@ export interface AudioSpaceParticipant {
 }
 
 /**
+ * Live Video Stream Status
+ */
+export interface LiveVideoStreamStatus {
+  [key: string]: unknown;
+}
+
+/**
  * Fetches an Audio Space by its ID using Twitter's GraphQL API.
  * @param spaceId The Audio Space ID to fetch.
  * @param auth The TwitterAuth instance to use for authentication.
  * @returns A RequestApiResult containing the Audio Space data or an error.
  */
-export async function getAudioSpaceById(
+export async function fetchAudioSpaceById(
   spaceId: string,
   auth: TwitterAuth,
 ): Promise<RequestApiResult<AudioSpace>> {
@@ -167,4 +176,68 @@ export async function getAudioSpaceById(
     success: true,
     value: value.data.audioSpace,
   };
+}
+
+/**
+ * Fetches the status of an Audio Space stream by its media key.
+ * @param mediaKey The media key of the Audio Space.
+ * @param auth The authentication object.
+ * @returns The status of the Audio Space stream.
+ */
+export async function fetchLiveVideoStreamStatus(
+  mediaKey: string,
+  auth: TwitterAuth,
+): Promise<LiveVideoStreamStatus> {
+  const baseUrl = `https://x.com/i/api/1.1/live_video_stream/status/${mediaKey}`;
+  const queryParams = new URLSearchParams({
+    client: 'web',
+    use_syndication_guest_id: 'false',
+    cookie_set_host: 'x.com',
+  });
+
+  const url = `${baseUrl}?${queryParams.toString()}`;
+
+  const onboardingTaskUrl = 'https://api.twitter.com/1.1/onboarding/task.json';
+
+  // Retrieve necessary cookies and tokens
+  const cookies = await auth.cookieJar().getCookies(onboardingTaskUrl);
+  const xCsrfToken = cookies.find((cookie) => cookie.key === 'ct0');
+
+  const headers = new Headers({
+    Accept: '*/*',
+    Authorization: `Bearer ${(auth as any).bearerToken}`,
+    'Content-Type': 'application/json',
+    Cookie: await auth.cookieJar().getCookieString(onboardingTaskUrl),
+    'User-Agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'x-guest-token': (auth as any).guestToken,
+    'x-twitter-auth-type': 'OAuth2Client',
+    'x-twitter-active-user': 'yes',
+    'x-csrf-token': xCsrfToken?.value as string,
+  });
+
+  try {
+    const response = await auth.fetch(url, {
+      method: 'GET',
+      headers: headers,
+    });
+
+    // Update the cookie jar with any new cookies from the response
+    await updateCookieJar(auth.cookieJar(), response.headers);
+
+    // Check for errors in the response
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch live video stream status: ${await response.text()}`,
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(
+      `Error fetching live video stream status for mediaKey ${mediaKey}:`,
+      error,
+    );
+    throw error;
+  }
 }
