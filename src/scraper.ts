@@ -2,7 +2,12 @@ import { Cookie } from 'tough-cookie';
 import { bearerToken, FetchTransformOptions, RequestApiResult } from './api';
 import { TwitterAuth, TwitterAuthOptions, TwitterGuestAuth } from './auth';
 import { FlowSubtaskHandler, TwitterUserAuth } from './auth-user';
-import { getProfile, getUserIdByScreenName, Profile } from './profile';
+import {
+  getProfile,
+  getScreenNameByUserId,
+  getUserIdByScreenName,
+  Profile,
+} from './profile';
 import {
   fetchSearchProfiles,
   fetchSearchTweets,
@@ -47,7 +52,12 @@ import {
   findDmConversationsByUserId,
   DmConversation,
 } from './direct-messages';
-import { AudioSpace, fetchLiveVideoStreamStatus, fetchAudioSpaceById, LiveVideoStreamStatus } from './spaces';
+import {
+  AudioSpace,
+  fetchLiveVideoStreamStatus,
+  fetchAudioSpaceById,
+  LiveVideoStreamStatus,
+} from './spaces';
 
 const twUrl = 'https://x.com';
 
@@ -150,6 +160,16 @@ export class Scraper {
   public async getUserIdByScreenName(screenName: string): Promise<string> {
     const res = await getUserIdByScreenName(screenName, this.auth);
     return this.handleResponse(res);
+  }
+
+  /**
+   *
+   * @param userId The user ID of the profile to fetch.
+   * @returns The screen name of the corresponding account.
+   */
+  public async getScreenNameByUserId(userId: string): Promise<string> {
+    const response = await getScreenNameByUserId(userId, this.auth);
+    return this.handleResponse(response);
   }
 
   /**

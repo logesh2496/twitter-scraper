@@ -260,6 +260,72 @@ export async function getProfile(
 
 const idCache = new Map<string, string>();
 
+export async function getScreenNameByUserId(
+  userId: string,
+  auth: TwitterAuth,
+): Promise<RequestApiResult<string>> {
+  const request = apiRequestFactory.createUserByRestIdRequest();
+  request.variables.userId = userId;
+
+  // Use bearerToken2 for UserByRestId endpoint
+  const res = await requestApi<UserRaw>(
+    request.toRequestUrl(),
+    auth,
+    'GET',
+    undefined,
+    undefined,
+    bearerToken2,
+  );
+
+  if (!res.success) {
+    return res;
+  }
+
+  const { value } = res;
+  const { errors } = value;
+  if (
+    (!value.data || !value.data.user || !value.data.user.result) &&
+    errors != null &&
+    errors.length > 0
+  ) {
+    return {
+      success: false,
+      err: new Error(errors.map((e) => e.message).join('\n')),
+    };
+  }
+
+  if (!value.data || !value.data.user || !value.data.user.result) {
+    return {
+      success: false,
+      err: new Error('User not found.'),
+    };
+  }
+
+  const { result: user } = value.data.user;
+  const { legacy } = user;
+
+  if (user.__typename === 'UserUnavailable' && user?.reason === 'Suspended') {
+    return {
+      success: false,
+      err: new Error('User is suspended.'),
+    };
+  }
+
+  if (legacy.screen_name == null || legacy.screen_name.length === 0) {
+    return {
+      success: false,
+      err: new Error(
+        `Either user with ID ${userId} does not exist or is private.`,
+      ),
+    };
+  }
+
+  return {
+    success: true,
+    value: legacy.screen_name,
+  };
+}
+
 export async function getUserIdByScreenName(
   screenName: string,
   auth: TwitterAuth,
