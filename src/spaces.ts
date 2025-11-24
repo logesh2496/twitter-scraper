@@ -16,10 +16,17 @@ export interface AudioSpaceResponse {
 }
 
 /**
+ * Represents Sharings within an Audio Space.
+ */
+interface Sharings {
+  items: any[];
+  slice_info: Record<string, any>;
+}
+
+/**
  * Audio Space object containing space details
  */
 export interface AudioSpace {
-  rest_id?: string;
   metadata?: AudioSpaceMetadata;
   participants?: {
     total?: number;
@@ -27,18 +34,8 @@ export interface AudioSpace {
     speakers?: AudioSpaceParticipant[];
     listeners?: AudioSpaceParticipant[];
   };
-  state?: string;
-  title?: string;
-  started_at?: number;
-  ended_at?: number;
-  created_at?: number;
-  updated_at?: number;
-  creator_id?: string;
-  is_space_available_for_replay?: boolean;
-  is_space_available_for_clipping?: boolean;
-  disallow_join?: boolean;
-  narrow_cast_space_type?: number;
-  [key: string]: unknown;
+  is_subscribed: boolean;
+  sharings: Sharings;
 }
 
 /**
@@ -77,11 +74,23 @@ export interface AudioSpaceParticipant {
   [key: string]: unknown;
 }
 
+interface LiveVideoSource {
+  location: string;
+  noRedirectPlaybackUrl: string;
+  status: string;
+  streamType: string;
+}
+
 /**
  * Live Video Stream Status
  */
 export interface LiveVideoStreamStatus {
-  [key: string]: unknown;
+  source: LiveVideoSource;
+  sessionId: string;
+  chatToken: string;
+  lifecycleToken: string;
+  shareUrl: string;
+  chatPermissionType: string;
 }
 
 /**
