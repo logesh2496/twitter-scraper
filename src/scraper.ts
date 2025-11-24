@@ -646,6 +646,13 @@ export class Scraper {
     return this;
   }
 
+  /**
+   * Returns the fetch function used by the scraper.
+   */
+  public getFetch(): typeof fetch {
+    return this.options?.fetch || fetch;
+  }
+
   private getAuthOptions(): Partial<TwitterAuthOptions> {
     return {
       fetch: this.options?.fetch,
