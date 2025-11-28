@@ -56,3 +56,12 @@ export type {
   PlaceRaw,
   Video,
 } from './tweets';
+export {
+  type AudioSpaceResponse,
+  type AudioSpace,
+  type AudioSpaceMetadata,
+  type AudioSpaceParticipant,
+  type LiveVideoStreamStatus,
+  fetchAudioSpaceById,
+  fetchLiveVideoStreamStatus,
+} from './spaces';

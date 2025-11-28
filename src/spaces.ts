@@ -27,37 +27,95 @@ interface Sharings {
  * Audio Space object containing space details
  */
 export interface AudioSpace {
-  metadata?: AudioSpaceMetadata;
-  participants?: {
-    total?: number;
-    admins?: AudioSpaceParticipant[];
-    speakers?: AudioSpaceParticipant[];
-    listeners?: AudioSpaceParticipant[];
+  metadata: AudioSpaceMetadata;
+  participants: {
+    total: number;
+    admins: AudioSpaceParticipant[];
+    speakers: AudioSpaceParticipant[];
+    listeners: AudioSpaceParticipant[];
   };
   is_subscribed: boolean;
   sharings: Sharings;
 }
 
 /**
+ * Represents the result details of a Creator.
+ */
+interface CreatorResult {
+  __typename: string;
+  id: string;
+  rest_id: string;
+  affiliates_highlighted_label: Record<string, any>;
+  has_graduated_access: boolean;
+  is_blue_verified: boolean;
+  profile_image_shape: string;
+  legacy: {
+    following: boolean;
+    can_dm: boolean;
+    can_media_tag: boolean;
+    created_at: string;
+    default_profile: boolean;
+    default_profile_image: boolean;
+    description: string;
+    entities: {
+      description: {
+        urls: any[];
+      };
+    };
+    fast_followers_count: number;
+    favourites_count: number;
+    followers_count: number;
+    friends_count: number;
+    has_custom_timelines: boolean;
+    is_translator: boolean;
+    listed_count: number;
+    location: string;
+    media_count: number;
+    name: string;
+    needs_phone_verification: boolean;
+    normal_followers_count: number;
+    pinned_tweet_ids_str: string[];
+    possibly_sensitive: boolean;
+    profile_image_url_https: string;
+    profile_interstitial_type: string;
+    screen_name: string;
+    statuses_count: number;
+    translator_type: string;
+    verified: boolean;
+    want_retweets: boolean;
+    withheld_in_countries: string[];
+  };
+  tipjar_settings: Record<string, any>;
+}
+/**
  * Audio Space metadata
  */
 export interface AudioSpaceMetadata {
-  rest_id?: string;
-  state?: string;
-  title?: string;
-  media_key?: string;
-  created_at?: number;
-  started_at?: number;
-  ended_at?: number;
-  updated_at?: number;
-  disallow_join?: boolean;
-  narrow_cast_space_type?: number;
-  is_space_available_for_replay?: boolean;
-  is_space_available_for_clipping?: boolean;
-  conversation_controls?: number;
-  total_replay_watched?: number;
-  total_live_listeners?: number;
-  [key: string]: unknown;
+  rest_id: string;
+  state: string;
+  media_key: string;
+  created_at: number;
+  started_at: number;
+  ended_at: string;
+  updated_at: number;
+  content_type: string;
+  creator_results: {
+    result: CreatorResult;
+  };
+  conversation_controls: number;
+  disallow_join: boolean;
+  is_employee_only: boolean;
+  is_locked: boolean;
+  is_muted: boolean;
+  is_space_available_for_clipping: boolean;
+  is_space_available_for_replay: boolean;
+  narrow_cast_space_type: number;
+  no_incognito: boolean;
+  total_replay_watched: number;
+  total_live_listeners: number;
+  tweet_results: Record<string, any>;
+  max_guest_sessions: number;
+  max_admin_capacity: number;
 }
 
 /**
