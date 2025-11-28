@@ -74,6 +74,7 @@ export interface Tweet {
   quotedStatus?: Tweet;
   quotedStatusId?: string;
   replies?: number;
+  quotes?: number;
   retweets?: number;
   retweetedStatus?: Tweet;
   retweetedStatusId?: string;

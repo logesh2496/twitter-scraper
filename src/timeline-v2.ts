@@ -176,6 +176,7 @@ export function parseLegacyTweet(
     permanentUrl: `https://x.com/${username}/status/${tweetId}`,
     photos,
     replies: tweet.reply_count,
+    quotes: tweet.quote_count,
     retweets: tweet.retweet_count,
     text: tweet.full_text,
     thread: [],

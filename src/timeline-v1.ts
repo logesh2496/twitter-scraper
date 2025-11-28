@@ -140,6 +140,7 @@ export interface LegacyTweetRaw {
   in_reply_to_status_id_str?: string;
   place?: PlaceRaw;
   reply_count?: number;
+  quote_count?: number;
   retweet_count?: number;
   retweeted_status_id_str?: string;
   retweeted_status_result?: {
@@ -294,6 +295,7 @@ function parseTimelineTweet(
     permanentUrl: `https://x.com/${user.screen_name}/status/${tweetId}`,
     photos,
     replies: tweet.reply_count,
+    quotes: tweet.quote_count,
     retweets: tweet.retweet_count,
     text: tweet.full_text,
     thread: [],
