@@ -325,8 +325,9 @@ export class TwitterUserAuth extends TwitterGuestAuth {
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
     );
 
-    if (this.guestToken) {
-      // Guest token is optional for authenticated users
+    const cookieString = await this.getCookieString();
+    if (!cookieString && this.guestToken) {
+      // Guest token is optional for authenticated users, and can cause 401s if sent with cookies
       headers.set('x-guest-token', this.guestToken);
     }
 
