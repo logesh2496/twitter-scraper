@@ -1,5 +1,5 @@
 import stringify from 'json-stable-stringify';
-import { requestApi, RequestApiResult, addApiFeatures } from './api';
+import { requestApi, RequestApiResult, addApiFeatures, bearerToken2 } from './api';
 import { TwitterAuth } from './auth';
 import { TwitterApiErrorRaw } from './errors';
 import { updateCookieJar } from './requests';
@@ -212,7 +212,14 @@ export async function fetchAudioSpaceById(
 
   const url = `https://x.com/i/api/graphql/${queryId}/${operationName}?${params.toString()}`;
 
-  const res = await requestApi<AudioSpaceResponse>(url, auth);
+  const res = await requestApi<AudioSpaceResponse>(
+    url,
+    auth,
+    'GET',
+    undefined,
+    undefined,
+    bearerToken2,
+  );
 
   if (!res.success) {
     return res;
