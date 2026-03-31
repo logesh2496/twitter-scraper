@@ -7,7 +7,7 @@
     "scraper",
     "crawler"
   ],
-  "version": "0.23.8",
+  "version": "0.24.1",
   "main": "dist/default/cjs/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
@@ -30,7 +30,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/logesh-dev/lite-scraper.git"
+    "url": "git+https://github.com/logesh2496/twitter-scraper.git"
   },
   "author": "logesh_dev",
   "license": "MIT",

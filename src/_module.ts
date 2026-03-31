@@ -65,3 +65,8 @@ export {
   fetchAudioSpaceById,
   fetchLiveVideoStreamStatus,
 } from './spaces';
+export { Space } from './spaces/core/Space';
+export { SpaceParticipant } from './spaces/core/SpaceParticipant';
+export { JanusClient } from './spaces/core/JanusClient';
+export type { Admin, Metadata } from './types/spaces';
+export type { AudioDataWithUser, Plugin } from './spaces/types';
