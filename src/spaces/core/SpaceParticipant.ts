@@ -278,6 +278,7 @@ export class SpaceParticipant extends EventEmitter {
       streamName: this.spaceId,
       turnServers,
       logger: this.logger,
+      fetch: this.scraper.getFetch(),
     });
 
     // 4) Initialize the guest speaker session in Janus

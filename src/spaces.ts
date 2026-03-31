@@ -1,9 +1,31 @@
 import stringify from 'json-stable-stringify';
-import { requestApi, RequestApiResult, addApiFeatures } from './api';
+import { requestApi, RequestApiResult, addApiFeatures, bearerToken2 } from './api';
 import { TwitterAuth } from './auth';
 import { TwitterApiErrorRaw } from './errors';
 import { updateCookieJar } from './requests';
 import { Headers } from 'headers-polyfill';
+import {
+    AudioSpaceByIdResponse,
+    AudioSpaceByIdVariables,
+    AuthenticatePeriscopeResponse,
+    BrowseSpaceTopicsResponse,
+    Community,
+    CommunitySelectQueryResponse,
+    LoginTwitterTokenResponse,
+    Subtopic,
+} from './types/spaces';
+
+/**
+ * Generates a random string that mimics a UUID v4.
+ */
+// TODO: install and replace with uuidv4
+function generateRandomId(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = (Math.random() * 16) | 0;
+        const v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+    });
+}
 
 /**
  * Audio Space response structure from Twitter GraphQL API
@@ -264,7 +286,7 @@ export async function fetchLiveVideoStreamStatus(
 
   const url = `${baseUrl}?${queryParams.toString()}`;
 
-  const onboardingTaskUrl = 'https://api.twitter.com/1.1/onboarding/task.json';
+  const onboardingTaskUrl = 'https://x.com';
 
   // Retrieve necessary cookies and tokens
   const cookies = await auth.cookieJar().getCookies(onboardingTaskUrl);
@@ -307,4 +329,147 @@ export async function fetchLiveVideoStreamStatus(
     );
     throw error;
   }
+}
+
+/**
+ * Authenticates Periscope to obtain a token.
+ * @param auth The authentication object.
+ * @returns The Periscope authentication token.
+ */
+export async function fetchAuthenticatePeriscope(
+    auth: TwitterAuth,
+): Promise<string> {
+    const queryId = 'r7VUmxbfqNkx7uwjgONSNw';
+    const operationName = 'AuthenticatePeriscope';
+
+    const variables = {};
+    const features = {};
+
+    const variablesEncoded = encodeURIComponent(JSON.stringify(variables));
+    const featuresEncoded = encodeURIComponent(JSON.stringify(features));
+
+    const url = `https://x.com/i/api/graphql/${queryId}/${operationName}?variables=${variablesEncoded}&features=${featuresEncoded}`;
+
+    const onboardingTaskUrl = 'https://x.com';
+
+    const cookies = await auth.cookieJar().getCookies(onboardingTaskUrl);
+    const xCsrfToken = cookies.find((cookie) => cookie.key === 'ct0');
+
+    if (!xCsrfToken) {
+        throw new Error('CSRF Token (ct0) not found in cookies.');
+    }
+
+    const clientTransactionId = generateRandomId();
+
+    const headers = new Headers({
+        Accept: '*/*',
+        Authorization: `Bearer ${bearerToken2}`,
+        'Content-Type': 'application/json',
+        Cookie: await auth.cookieJar().getCookieString(onboardingTaskUrl),
+        'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        'x-guest-token': (auth as any).guestToken,
+        'x-twitter-auth-type': 'OAuth2Session',
+        'x-twitter-active-user': 'yes',
+        'x-csrf-token': xCsrfToken.value,
+        'x-client-transaction-id': clientTransactionId,
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-ch-ua':
+            '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+        'x-twitter-client-language': 'en',
+        'sec-ch-ua-mobile': '?0',
+        Referer: 'https://x.com/i/spaces/start',
+    });
+
+    try {
+        const response = await auth.fetch(url, {
+            method: 'GET',
+            headers: headers,
+        });
+
+        await updateCookieJar(auth.cookieJar(), response.headers);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error ${response.status}: ${errorText}`);
+        }
+
+        const data: AuthenticatePeriscopeResponse = await response.json();
+
+        if (data.errors && data.errors.length > 0) {
+            throw new Error(`API Errors: ${JSON.stringify(data.errors)}`);
+        }
+
+        if (!data.data.authenticate_periscope) {
+            throw new Error('Periscope authentication failed, no data returned.');
+        }
+
+        return data.data.authenticate_periscope;
+    } catch (error) {
+        console.error('Error during Periscope authentication:', error);
+        throw error;
+    }
+}
+
+/**
+ * Logs in to Twitter via Proxsee using the Periscope JWT to obtain a login cookie.
+ * @param jwt The JWT obtained via AuthenticatePeriscope.
+ * @param auth The authentication object.
+ * @returns The response containing the cookie and user information.
+ */
+export async function fetchLoginTwitterToken(
+    jwt: unknown,
+    auth: TwitterAuth,
+): Promise<LoginTwitterTokenResponse> {
+    const url = 'https://proxsee.pscp.tv/api/v2/loginTwitterToken';
+
+    const idempotenceKey = generateRandomId();
+
+    const payload = {
+        jwt: jwt,
+        vendor_id: 'm5-proxsee-login-a2011357b73e',
+        create_user: true,
+    };
+
+    const headers = new Headers({
+        'Content-Type': 'application/json',
+        'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        Referer: 'https://x.com/',
+        'sec-ch-ua':
+            '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-ch-ua-mobile': '?0',
+        'X-Periscope-User-Agent': 'Twitter/m5',
+        'X-Idempotence': idempotenceKey,
+        'X-Attempt': '1',
+    });
+
+    try {
+        const response = await auth.fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(payload),
+        });
+
+        // Update the cookie jar with any new cookies from the response
+        await updateCookieJar(auth.cookieJar(), response.headers);
+
+        // Check if the response is successful
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error ${response.status}: ${errorText}`);
+        }
+
+        const data: LoginTwitterTokenResponse = await response.json();
+
+        if (!data.cookie || !data.user) {
+            throw new Error('Twitter authentication failed, missing data.');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error logging into Twitter via Proxsee:', error);
+        throw error;
+    }
 }

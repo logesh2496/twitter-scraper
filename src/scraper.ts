@@ -57,7 +57,10 @@ import {
   fetchLiveVideoStreamStatus,
   fetchAudioSpaceById,
   LiveVideoStreamStatus,
+  fetchAuthenticatePeriscope,
+  fetchLoginTwitterToken,
 } from './spaces';
+import { LoginTwitterTokenResponse } from './types/spaces';
 
 const twUrl = 'https://x.com';
 
@@ -111,6 +114,36 @@ export class Scraper {
   constructor(private readonly options?: Partial<ScraperOptions>) {
     this.token = bearerToken;
     this.useGuestAuth();
+  }
+
+  /**
+   * Authenticates Periscope to obtain a token.
+   * @returns The Periscope authentication token.
+   */
+  public async authenticatePeriscope(): Promise<string> {
+    return await fetchAuthenticatePeriscope(this.auth);
+  }
+
+  /**
+   * Logs in to Twitter via Proxsee using the Periscope JWT.
+   * @param jwt The JWT obtained from AuthenticatePeriscope.
+   * @returns The response containing the cookie and user information.
+   */
+  public async loginTwitterToken(
+    jwt: string,
+  ): Promise<LoginTwitterTokenResponse> {
+    return await fetchLoginTwitterToken(jwt, this.auth);
+  }
+
+  /**
+   * Orchestrates the flow: get token -> login -> return Periscope cookie
+   */
+  public async getPeriscopeCookie(): Promise<string> {
+    const periscopeToken = await this.authenticatePeriscope();
+
+    const loginResponse = await this.loginTwitterToken(periscopeToken);
+
+    return loginResponse.cookie;
   }
 
   /**
@@ -664,5 +697,9 @@ export class Scraper {
     }
 
     return res.value;
+  }
+
+  public getFetch(): typeof fetch {
+    return this.options?.fetch ?? fetch;
   }
 }

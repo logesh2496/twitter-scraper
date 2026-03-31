@@ -42,6 +42,11 @@ interface JanusConfig {
    * Logger instance for consistent debug/info/error logs.
    */
   logger: Logger;
+
+  /**
+   * Optional fetch function to use for Janus API requests.
+   */
+  fetch?: typeof fetch;
 }
 
 /**
@@ -291,7 +296,7 @@ export class JanusClient extends EventEmitter {
       ],
     });
 
-    subPc.ontrack = (evt) => {
+    subPc.ontrack = (evt: RTCTrackEvent) => {
       this.logger.debug(
         '[JanusClient] subscriber track => kind=%s, readyState=%s, muted=%s',
         evt.track.kind,
@@ -419,7 +424,8 @@ export class JanusClient extends EventEmitter {
    */
   private async createSession(): Promise<number> {
     const transaction = this.randomTid();
-    const resp = await fetch(this.config.webrtcUrl, {
+    const fetchFn = this.config.fetch ?? fetch;
+    const resp = await fetchFn(this.config.webrtcUrl, {
       method: 'POST',
       headers: {
         Authorization: this.config.credential,
@@ -449,7 +455,8 @@ export class JanusClient extends EventEmitter {
       throw new Error('[JanusClient] attachPlugin => no sessionId');
     }
     const transaction = this.randomTid();
-    const resp = await fetch(`${this.config.webrtcUrl}/${this.sessionId}`, {
+    const fetchFn = this.config.fetch ?? fetch;
+    const resp = await fetchFn(`${this.config.webrtcUrl}/${this.sessionId}`, {
       method: 'POST',
       headers: {
         Authorization: this.config.credential,
@@ -609,7 +616,8 @@ export class JanusClient extends EventEmitter {
       throw new Error('[JanusClient] No session for sendJanusMessage');
     }
     const transaction = this.randomTid();
-    const resp = await fetch(
+    const fetchFn = this.config.fetch ?? fetch;
+    const resp = await fetchFn(
       `${this.config.webrtcUrl}/${this.sessionId}/${handleId}`,
       {
         method: 'POST',
@@ -646,7 +654,8 @@ export class JanusClient extends EventEmitter {
         const url = `${this.config.webrtcUrl}/${
           this.sessionId
         }?maxev=1&_=${Date.now()}`;
-        const resp = await fetch(url, {
+        const fetchFn = this.config.fetch ?? fetch;
+        const resp = await fetchFn(url, {
           headers: { Authorization: this.config.credential },
         });
         if (resp.ok) {
@@ -831,7 +840,8 @@ export class JanusClient extends EventEmitter {
     };
     this.logger.info('[JanusClient] leaving room =>', body);
 
-    const resp = await fetch(
+    const fetchFn = this.config.fetch ?? fetch;
+    const resp = await fetchFn(
       `${this.config.webrtcUrl}/${this.sessionId}/${this.handleId}`,
       {
         method: 'POST',

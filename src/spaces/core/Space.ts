@@ -127,6 +127,7 @@ export class Space extends EventEmitter {
       streamName: broadcast.stream_name,
       turnServers,
       logger: this.logger,
+      fetch: this.scraper.getFetch(),
     });
     await this.janusClient.initialize();
 
@@ -261,7 +262,7 @@ export class Space extends EventEmitter {
 
     this.logger.debug('[Space] Approving speaker =>', endpoint, body);
 
-    const resp = await fetch(endpoint, {
+    const resp = await this.scraper.getFetch()(endpoint, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
@@ -368,7 +369,7 @@ export class Space extends EventEmitter {
 
     this.logger.debug('[Space] Removing speaker =>', endpoint, body);
 
-    const resp = await fetch(endpoint, {
+    const resp = await this.scraper.getFetch()(endpoint, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
@@ -460,7 +461,7 @@ export class Space extends EventEmitter {
 
     this.logger.debug('[Space] endAudiospace =>', body);
 
-    const resp = await fetch(url, {
+    const resp = await this.scraper.getFetch()(url, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
