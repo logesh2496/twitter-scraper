@@ -1,5 +1,5 @@
 import { TwitterAuthOptions, TwitterGuestAuth } from './auth';
-import { flexParseJson, requestApi } from './api';
+import { flexParseJson, requestApi, bearerToken2 } from './api';
 import { CookieJar } from 'tough-cookie';
 import { updateCookieJar } from './requests';
 import { Headers } from 'headers-polyfill';
@@ -241,8 +241,12 @@ export class TwitterUserAuth extends TwitterGuestAuth {
 
   async isLoggedIn(): Promise<boolean> {
     const res = await requestApi<TwitterUserAuthVerifyCredentials>(
-      'https://api.x.com/1.1/account/verify_credentials.json',
+      'https://x.com/i/api/1.1/account/verify_credentials.json',
       this,
+      'GET',
+      undefined,
+      undefined,
+      bearerToken2,
     );
     if (!res.success) {
       return false;

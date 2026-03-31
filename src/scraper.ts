@@ -580,9 +580,12 @@ export class Scraper {
    * @returns `true` if the scraper is logged in with a real user account; otherwise `false`.
    */
   public async isLoggedIn(): Promise<boolean> {
-    return (
-      (await this.auth.isLoggedIn()) && (await this.authTrends.isLoggedIn())
-    );
+    const authLoggedIn = await this.auth.isLoggedIn();
+    if (this.auth === this.authTrends) {
+      return authLoggedIn;
+    }
+
+    return authLoggedIn && (await this.authTrends.isLoggedIn());
   }
 
   /**

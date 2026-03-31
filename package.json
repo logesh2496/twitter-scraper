@@ -1,5 +1,5 @@
 {
-  "name": "@the-convocation/twitter-scraper",
+  "name": "@logesh_dev/lite-scraper",
   "description": "A port of n0madic/twitter-scraper to Node.js.",
   "keywords": [
     "x",
@@ -7,7 +7,7 @@
     "scraper",
     "crawler"
   ],
-  "version": "0.20.3",
+  "version": "0.23.8",
   "main": "dist/default/cjs/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
@@ -28,8 +28,11 @@
       "require": "./dist/cycletls/cjs/index.cjs"
     }
   },
-  "repository": "https://github.com/the-convocation/twitter-scraper.git",
-  "author": "karashiiro <49822414+karashiiro@users.noreply.github.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/logesh-dev/lite-scraper.git"
+  },
+  "author": "logesh_dev",
   "license": "MIT",
   "engines": {
     "node": ">=16"
