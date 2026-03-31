@@ -156,6 +156,7 @@ async function clientTransaction(): Promise<
   }
   return ClientTransaction;
 }
+let cachedTransaction: any = null;
 
 export async function generateTransactionId(
   url: string,
@@ -166,10 +167,17 @@ export async function generateTransactionId(
   const path = parsedUrl.pathname;
 
   log(`Generating transaction ID for ${method} ${path}`);
-  const document = await handleXMigration(fetchFn);
-  const ClientTransactionClass = await clientTransaction();
-  const transaction = await ClientTransactionClass.create(document);
-  const transactionId = await transaction.generateTransactionId(method, path);
+  if (!cachedTransaction) {
+    log('Fetching X homepage to initialize ClientTransaction...');
+    const document = await handleXMigration(fetchFn);
+    const ClientTransactionClass = await clientTransaction();
+    cachedTransaction = await ClientTransactionClass.create(document);
+  }
+
+  const transactionId = await cachedTransaction.generateTransactionId(
+    method,
+    path,
+  );
   log(`Transaction ID: ${transactionId}`);
 
   return transactionId;
