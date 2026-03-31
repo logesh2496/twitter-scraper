@@ -7,7 +7,7 @@
     "scraper",
     "crawler"
   ],
-  "version": "0.23.6",
+  "version": "0.23.7",
   "main": "dist/default/cjs/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
@@ -28,7 +28,10 @@
       "require": "./dist/cycletls/cjs/index.cjs"
     }
   },
-  "repository": "https://github.com/logesh-dev/lite-scraper.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/logesh-dev/lite-scraper.git"
+  },
   "author": "logesh_dev",
   "license": "MIT",
   "engines": {
