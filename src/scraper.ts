@@ -564,7 +564,8 @@ export class Scraper {
   public async getAudioSpaceStreamStatus(
     mediaKey: string,
   ): Promise<LiveVideoStreamStatus> {
-    return await fetchLiveVideoStreamStatus(mediaKey, this.auth);
+    const res = await fetchLiveVideoStreamStatus(mediaKey, this.auth);
+    return this.handleResponse(res);
   }
 
   /**

@@ -278,12 +278,12 @@ export async function fetchAudioSpaceById(
  * Fetches the status of an Audio Space stream by its media key.
  * @param mediaKey The media key of the Audio Space.
  * @param auth The authentication object.
- * @returns The status of the Audio Space stream.
+ * @returns A RequestApiResult containing the status of the Audio Space stream.
  */
 export async function fetchLiveVideoStreamStatus(
   mediaKey: string,
   auth: TwitterAuth,
-): Promise<LiveVideoStreamStatus> {
+): Promise<RequestApiResult<LiveVideoStreamStatus>> {
   const baseUrl = `https://x.com/i/api/1.1/live_video_stream/status/${mediaKey}`;
   const queryParams = new URLSearchParams({
     client: 'web',
@@ -293,21 +293,27 @@ export async function fetchLiveVideoStreamStatus(
 
   const url = `${baseUrl}?${queryParams.toString()}`;
 
-  const res = await requestApi<LiveVideoStreamStatus>(
-    url,
-    auth,
-    'GET',
-    undefined,
-    undefined,
-    bearerToken2,
-  );
+  const res = await requestApi<
+    LiveVideoStreamStatus & { errors?: TwitterApiErrorRaw[] }
+  >(url, auth, 'GET', undefined, undefined, bearerToken2);
 
   if (!res.success) {
-    throw res.err;
+    return res;
   }
 
-  return res.value;
+  if (res.value.errors && res.value.errors.length > 0) {
+    return {
+      success: false,
+      err: new Error(res.value.errors.map((e) => e.message).join('\n')),
+    };
+  }
+
+  return {
+    success: true,
+    value: res.value,
+  };
 }
+
 
 /**
  * Authenticates Periscope to obtain a token.
